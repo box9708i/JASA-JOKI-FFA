@@ -5,276 +5,152 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RBX JOKI FF PRO MAX</title>
 
-<meta name="theme-color" content="#000000">
-
-<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
 <style>
-body{
-margin:0;
-background:#000;
-color:#0ff;
-font-family:sans-serif;
-}
-.header{
-text-align:center;
-padding:15px;
-font-size:20px;
-}
-.container{
-padding:10px;
-padding-bottom:80px;
-}
+body{background:#000;color:#0ff;font-family:sans-serif;margin:0}
+.card{background:#111;border:1px solid cyan;padding:10px;margin:10px;border-radius:10px}
+button,input{width:100%;margin-top:5px;padding:10px}
+.bottomNav{position:fixed;bottom:0;width:100%;display:flex;justify-content:space-around;background:#111;padding:10px}
 .section{display:none}
 .active{display:block}
-.card{
-background:#111;
-border:1px solid cyan;
-padding:15px;
-border-radius:10px;
-margin-top:10px;
-}
-button,input,select{
-width:100%;
-padding:10px;
-margin-top:5px;
-border-radius:8px;
-}
-button{
-background:cyan;
-color:#000;
-border:none;
-}
-input,select{
-background:#000;
-border:1px solid cyan;
-color:#0ff;
-}
-.bottomNav{
-position:fixed;
-bottom:0;
-width:100%;
-height:60px;
-background:#111;
-display:flex;
-justify-content:space-around;
-align-items:center;
-}
-.toast{
-position:fixed;
-top:20px;
-right:20px;
-background:cyan;
-color:#000;
-padding:10px;
-display:none;
-}
 </style>
 </head>
 
 <body>
 
-<div class="header">👑 RBX JOKI FF PRO MAX</div>
-<div id="toast" class="toast"></div>
+<h2 style="text-align:center">👑 RBX JOKI FF PRO MAX</h2>
 
-<div class="container">
-
-<!-- HOME -->
 <div id="home" class="section active">
-
 <div class="card">
-<h3>🔥 Joki FF Premium</h3>
-<button onclick="openTab('order')">Order Sekarang</button>
-</div>
-
-<div class="card">
-<h3>🔐 Login</h3>
+<h3>Login</h3>
 <input id="email" placeholder="Email">
 <input id="password" type="password" placeholder="Password">
 <button onclick="register()">Daftar</button>
-<button onclick="loginUser()">Login Email</button>
-<button onclick="loginGoogle()">Login Google</button>
-<button onclick="resetPassword()">Reset Password</button>
+<button onclick="loginUser()">Login</button>
+<button onclick="loginGoogle()">Google</button>
 <p id="user"></p>
 </div>
 
 <div class="card">
-<h3>📄 Riwayat</h3>
+<h3>Riwayat</h3>
 <div id="history"></div>
 </div>
-
 </div>
 
-<!-- ORDER -->
-<div id="order" class="section">
-<div class="card">
-<input id="nick" placeholder="Nickname">
-
-<select id="rank">
-<option>Bronze</option><option>Silver</option><option>Gold</option>
-<option>Platinum</option><option>Diamond</option>
-<option>Heroic</option><option>Master</option>
-</select>
-
-<select id="target">
-<option>Silver</option><option>Gold</option>
-<option>Platinum</option><option>Diamond</option>
-<option>Heroic</option><option>Master</option>
-</select>
-
-<select id="speed">
-<option value="normal">Normal</option>
-<option value="express">⚡ Express</option>
-</select>
-
-<button onclick="order()">🚀 ORDER</button>
-<button onclick="kirimReport()">🚨 Report</button>
-</div>
-
-<div id="orders"></div>
-</div>
-
-<!-- ADMIN -->
 <div id="admin" class="section">
-<div class="card"><h3>📊 Orders</h3><div id="adminOrders"></div></div>
-<div class="card"><h3>📨 Reports</h3><div id="reports"></div></div>
-<div class="card"><h3>📈 Logs</h3><div id="logs"></div></div>
+<div class="card">
+<h3>ADMIN PANEL</h3>
+<div id="adminOrders"></div>
 </div>
-
 </div>
 
 <div class="bottomNav">
-<div onclick="openTab('home')">🏠</div>
-<div onclick="openTab('order')">🎮</div>
-<div onclick="openTab('admin')">⚙️</div>
+<button onclick="openTab('home')">🏠</button>
+<button onclick="openTab('admin')">⚙️</button>
 </div>
 
 <script>
 
-/* 🔥 CONFIG FIREBASE (SUDAH DIPERBAIKI) */
+/* ✅ CONFIG FIREBASE (WAJIB LENGKAP!) */
 firebase.initializeApp({
   apiKey: "AIzaSyANTek9UccovUUtI2X3fzQmLU2D0eCvnPg",
   authDomain: "rbx-joki-ff.firebaseapp.com",
-  projectId: "rbx-joki-ff"
+  projectId: "rbx-joki-ff",
+  storageBucket: "rbx-joki-ff.firebasestorage.app",
+  messagingSenderId: "715158267681",
+  appId: "1:715158267681:web:85461a4a161056efe50060"
 });
 
 const db = firebase.firestore();
-let userData = null;
-let role = "user";
+let userData=null;
+let role="user";
 
 /* NAV */
 function openTab(t){
-if(role !== "admin" && t === "admin"){
-notif("Akses ditolak");
+if(t==="admin" && role!=="admin"){
+alert("Akses ditolak ❌");
 return;
 }
-document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));
 document.getElementById(t).classList.add("active");
 }
 
-/* AUTH */
+/* REGISTER */
 async function register(){
 try{
 let res = await firebase.auth().createUserWithEmailAndPassword(
-document.getElementById("email").value,
-document.getElementById("password").value
+email.value.trim(),
+password.value.trim()
 );
 
-await db.collection("roles").doc(res.user.uid).set({role:"user"});
-notif("Akun berhasil dibuat");
-}catch(e){notif(e.message)}
+/* otomatis buat role user */
+await db.collection("roles").doc(res.user.uid).set({
+role:"user"
+});
+
+alert("Berhasil daftar!");
+}catch(e){alert(e.message)}
 }
 
+/* LOGIN */
 function loginUser(){
 firebase.auth().signInWithEmailAndPassword(
-document.getElementById("email").value,
-document.getElementById("password").value
-).catch(e=>notif(e.message));
+email.value.trim(),
+password.value.trim()
+).catch(e=>alert(e.message));
 }
 
+/* GOOGLE */
 async function loginGoogle(){
 try{
 let res = await firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
-await db.collection("roles").doc(res.user.uid).set({role:"user"},{merge:true});
-}catch(e){notif(e.message)}
+
+await db.collection("roles").doc(res.user.uid).set({
+role:"user"
+},{merge:true});
+
+}catch(e){alert(e.message)}
 }
 
-function resetPassword(){
-firebase.auth().sendPasswordResetEmail(
-document.getElementById("email").value
-);
-notif("Email reset dikirim");
+/* STATE LOGIN */
+firebase.auth().onAuthStateChanged(async user=>{
+if(!user) return;
+
+userData=user;
+document.getElementById("user").innerText="Login: "+user.email;
+
+/* ambil role */
+let doc = await db.collection("roles").doc(user.uid).get();
+if(doc.exists){
+role = doc.data().role;
 }
 
-/* STATE */
-firebase.auth().onAuthStateChanged(async u=>{
-if(!u) return;
-userData = u;
-document.getElementById("user").innerText = u.email;
-
-let r = await db.collection("roles").doc(u.uid).get();
-if(r.exists){
-role = r.data().role;
+/* ADMIN AUTO AKSES */
+if(user.uid==="KF3xI5UGind2YpkZjIaAQ8Fev1G3"){
+role="admin";
 }
 
+/* load data */
 loadHistory();
 });
-
-/* ORDER */
-async function order(){
-if(!userData) return notif("Login dulu!");
-
-await db.collection("orders").add({
-userId: userData.uid,
-nick: document.getElementById("nick").value,
-rank: document.getElementById("rank").value,
-target: document.getElementById("target").value,
-progress: 0,
-createdAt: Date.now()
-});
-
-notif("Order berhasil dibuat");
-}
 
 /* HISTORY */
 function loadHistory(){
 db.collection("orders")
 .where("userId","==",userData.uid)
-.onSnapshot(s=>{
-let h="";
-s.forEach(d=>{
+.onSnapshot(snap=>{
+let html="";
+snap.forEach(d=>{
 let x=d.data();
-h += `<div class="card">${x.nick} - ${x.progress}%</div>`;
+html+=`<div>${x.nick || "-"} (${x.progress || 0}%)</div>`;
 });
-document.getElementById("history").innerHTML = h;
+document.getElementById("history").innerHTML=html;
 });
-}
-
-/* REPORT (SUDAH FIX BUG) */
-function kirimReport(){
-let msg = prompt("Isi laporan");
-if(!msg) return;
-
-db.collection("reports").add({
-msg: msg,
-time: Date.now()
-});
-
-notif("Report terkirim");
-}
-
-/* NOTIF */
-function notif(t){
-let toast = document.getElementById("toast");
-toast.innerText = t;
-toast.style.display = "block";
-setTimeout(()=>toast.style.display="none",3000);
 }
 
 </script>
-
 </body>
-  </html>
+</html>
