@@ -7,43 +7,29 @@
 
 <meta name="theme-color" content="#000000">
 
-<!-- Firebase -->
+<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
 <style>
-html,body{
+body{
 margin:0;
-padding:0;
-height:100%;
 background:#000;
 color:#0ff;
 font-family:sans-serif;
 }
-
-/* HEADER */
 .header{
 text-align:center;
 padding:15px;
 font-size:20px;
-background:#000;
-position:sticky;
-top:0;
 }
-
-/* CONTAINER */
 .container{
 padding:10px;
-min-height:100vh;
 padding-bottom:80px;
 }
-
-/* SECTION */
 .section{display:none}
 .active{display:block}
-
-/* CARD */
 .card{
 background:#111;
 border:1px solid cyan;
@@ -51,28 +37,22 @@ padding:15px;
 border-radius:10px;
 margin-top:10px;
 }
-
-/* FORM */
 button,input,select{
 width:100%;
 padding:10px;
 margin-top:5px;
 border-radius:8px;
 }
-
 button{
 background:cyan;
 color:#000;
 border:none;
 }
-
 input,select{
 background:#000;
 border:1px solid cyan;
 color:#0ff;
 }
-
-/* NAV */
 .bottomNav{
 position:fixed;
 bottom:0;
@@ -83,8 +63,6 @@ display:flex;
 justify-content:space-around;
 align-items:center;
 }
-
-/* TOAST */
 .toast{
 position:fixed;
 top:20px;
@@ -176,19 +154,23 @@ display:none;
 
 <script>
 
-/* 🔥 ISI CONFIG FIREBASE KAMU */
+/* 🔥 CONFIG FIREBASE (SUDAH DIPERBAIKI) */
 firebase.initializeApp({
   apiKey: "AIzaSyANTek9UccovUUtI2X3fzQmLU2D0eCvnPg",
-  authDomain: "http://rbx-joki-ff.firebaseapp.com",
+  authDomain: "rbx-joki-ff.firebaseapp.com",
   projectId: "rbx-joki-ff"
 });
 
-const db=firebase.firestore();
-let userData=null, role="user";
+const db = firebase.firestore();
+let userData = null;
+let role = "user";
 
 /* NAV */
 function openTab(t){
-if(role!=="admin" && t==="admin") return notif("Akses ditolak");
+if(role !== "admin" && t === "admin"){
+notif("Akses ditolak");
+return;
+}
 document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
 document.getElementById(t).classList.add("active");
 }
@@ -196,37 +178,47 @@ document.getElementById(t).classList.add("active");
 /* AUTH */
 async function register(){
 try{
-let res=await firebase.auth().createUserWithEmailAndPassword(email.value,password.value);
+let res = await firebase.auth().createUserWithEmailAndPassword(
+document.getElementById("email").value,
+document.getElementById("password").value
+);
+
 await db.collection("roles").doc(res.user.uid).set({role:"user"});
-notif("Akun dibuat!");
+notif("Akun berhasil dibuat");
 }catch(e){notif(e.message)}
 }
 
 function loginUser(){
-firebase.auth().signInWithEmailAndPassword(email.value,password.value)
-.catch(e=>notif(e.message));
+firebase.auth().signInWithEmailAndPassword(
+document.getElementById("email").value,
+document.getElementById("password").value
+).catch(e=>notif(e.message));
 }
 
 async function loginGoogle(){
 try{
-let res=await firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
+let res = await firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
 await db.collection("roles").doc(res.user.uid).set({role:"user"},{merge:true});
 }catch(e){notif(e.message)}
 }
 
 function resetPassword(){
-firebase.auth().sendPasswordResetEmail(email.value);
+firebase.auth().sendPasswordResetEmail(
+document.getElementById("email").value
+);
 notif("Email reset dikirim");
 }
 
 /* STATE */
 firebase.auth().onAuthStateChanged(async u=>{
 if(!u) return;
-userData=u;
-document.getElementById("user").innerText=u.email;
+userData = u;
+document.getElementById("user").innerText = u.email;
 
-let r=await db.collection("roles").doc(u.uid).get();
-if(r.exists) role=r.data().role;
+let r = await db.collection("roles").doc(u.uid).get();
+if(r.exists){
+role = r.data().role;
+}
 
 loadHistory();
 });
@@ -236,46 +228,53 @@ async function order(){
 if(!userData) return notif("Login dulu!");
 
 await db.collection("orders").add({
-userId:userData.uid,
-nick:nick.value,
-rank:rank.value,
-target:target.value,
-progress:0,
-createdAt:Date.now()
+userId: userData.uid,
+nick: document.getElementById("nick").value,
+rank: document.getElementById("rank").value,
+target: document.getElementById("target").value,
+progress: 0,
+createdAt: Date.now()
 });
 
-notif("Order dibuat!");
+notif("Order berhasil dibuat");
 }
 
 /* HISTORY */
 function loadHistory(){
-db.collection("orders").where("userId","==",userData.uid)
+db.collection("orders")
+.where("userId","==",userData.uid)
 .onSnapshot(s=>{
 let h="";
 s.forEach(d=>{
 let x=d.data();
-h+=`<div class="card">${x.nick} - ${x.progress}%</div>`;
+h += `<div class="card">${x.nick} - ${x.progress}%</div>`;
 });
-document.getElementById("history").innerHTML=h;
+document.getElementById("history").innerHTML = h;
 });
 }
 
-/* REPORT */
+/* REPORT (SUDAH FIX BUG) */
 function kirimReport(){
-let msg=prompt("Isi laporan");
+let msg = prompt("Isi laporan");
 if(!msg) return;
-db.collection("reports").add({msg:msg,time:Date.now()});
+
+db.collection("reports").add({
+msg: msg,
+time: Date.now()
+});
+
+notif("Report terkirim");
 }
 
 /* NOTIF */
 function notif(t){
-let toast=document.getElementById("toast");
-toast.innerText=t;
-toast.style.display="block";
+let toast = document.getElementById("toast");
+toast.innerText = t;
+toast.style.display = "block";
 setTimeout(()=>toast.style.display="none",3000);
 }
 
 </script>
 
 </body>
-</html>
+  </html>
